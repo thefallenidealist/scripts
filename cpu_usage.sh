@@ -11,4 +11,4 @@ PERCENTAGE=$(expr $NCPU \* 100)
 IDLE=$(ps u 11 | awk 'NR==2 {print $3}')
 USAGE=$(bc -e "scale=2; ($NCPU * 100 - $IDLE) / $NCPU " -e quit)
 
-printf "%.1f %%\n" $USAGE
+printf "%.1f%%\n" $USAGE
