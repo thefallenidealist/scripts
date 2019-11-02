@@ -16,6 +16,8 @@ fi
 
 git clone https://github.com/riscv/riscv-gnu-toolchain riscv-gnu-toolchain-riscv32
 cd riscv-gnu-toolchain-riscv32
+# git checkout c3ad555
+git submodule update --init --recursive
 
 ARCHS="rv32i rv32im rv32ic rv32imc"
 for arch in $ARCHS ; do
@@ -23,8 +25,11 @@ for arch in $ARCHS ; do
 	rm -rf build
 	mkdir build
 	cd build
+	# ../configure --with-arch=rv32i --prefix=$HOME/.opt/riscv32i
 	../configure --with-arch=$arch --prefix=$DESTDIR/$FOLDER
-	CC=gcc7 CXX=g++7 gmake -j4
+	# time CC=gcc8 CXX=g++8 gmake -j4
+	# {time CC=gcc8 CXX=g++8 gmake -j4} 2> /tmp/build-tools-$arch.time XXX
+	CC=gcc8 CXX=g++8 gmake -j4
 	cd -
 done
 

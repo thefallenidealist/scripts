@@ -1,0 +1,23 @@
+#!/bin/sh
+# Locks PC before going to suspend
+
+# FreeBSD: pkg install xlockmore doas
+#		doas.conf: permit nopass <USERNAME> as root cmd acpiconf args -s 3
+
+OS=$(uname)
+
+# xautolock -locknow &&
+xlock -mode blank &&
+
+case $OS in
+	FreeBSD)
+		echo doas acpiconf -s 3
+		;;
+	Linux)
+		echo TODO
+		exit 1;
+		;;
+	*)
+		echo "Unknown OS"
+		;;
+esac
