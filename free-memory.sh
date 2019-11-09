@@ -1,4 +1,5 @@
 #!/bin/sh
+# created 181227
 # stripped down version of https://raw.githubusercontent.com/ocochard/myscripts/master/FreeBSD/freebsd-memory.sh
 
 pagesize=`sysctl -n hw.pagesize`
