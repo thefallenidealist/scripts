@@ -24,4 +24,4 @@ INTERFACE="wlan0"
 # - SSID of the network
 # printed output, 2rd line:
 # - IP address
-ifconfig $INTERFACE | \grep -wE "status|ssid|inet" | awk '{print $2}' | tr '\n' ' ' | sed 's/associated/(+)/;s/not/(-)/' | awk '{print $3 " " $2 "\n" $1}'
+ifconfig $INTERFACE | \grep -wE "status|ssid|inet" | awk '{print $2}' | tr '\n' ' ' | sed 's/associated/(+)/;s/not/(-)/;s/running/(AP)/' | awk '{print $3 " " $2 "\n" $1}'
