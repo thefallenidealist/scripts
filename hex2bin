@@ -1,0 +1,19 @@
+#!/bin/sh
+# created 140809
+# hex to dec
+
+#echo "ibase=16; 1700" | bc
+#echo "obase=2; 5888" | bc
+
+
+# bez 0x prefiksa
+# pretvori u velika slova da se bc ne buni:
+input=`echo $1 | sed 's/0x//' | tr '[:lower:]' '[:upper:]'`
+# nece bit nista ako nema 0x prefiks
+
+
+dec=`echo "ibase=16; $input" | bc`
+bin=`echo "obase=2; $dec" | bc`
+
+echo 0x$input = 
+echo 0b$bin
