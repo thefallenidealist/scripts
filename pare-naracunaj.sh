@@ -24,7 +24,6 @@ do
 		(*[!0-9]*|'')	# if not a number
 			;;
 		(*)
-			# echo Potroseno: $POTROSENO tmp: $TMP line: $LINE
 			POTROSENO=$(($POTROSENO+$TMP))
 			;;
 	esac
