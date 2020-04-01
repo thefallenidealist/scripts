@@ -17,8 +17,9 @@ echo File: $FILE
 echo "----------------------------------------"
 while read LINE		# iterate through every file of file
 do
-	# grep for word, -E (extended regex for item1a|item1b|item1c, remove comments, remove empry line, print only 1st field, paste numbers and '+' and run it through calculator
-	TMP=$(grep -Ew $LINE $FILE | cut -f 1 | sed -e 's/#.*$//' -e '/^$/d' | cut -d " " -f 1 | paste -sd+ - | bc)
+	# - remove comments, remove empty lines
+	# grep for word, -E (extended regex for item1a|item1b|item1c without escaping \), print only 1st field, paste numbers and '+' and run it through calculator
+	TMP=$(sed -e 's/#.*$//' -e '/^$/d' -e '/^#.*/d' $FILE | grep -Ew $LINE | cut -f 1 | cut -d " " -f 1 | paste -sd+ - | bc)
 
 	case $TMP in
 		(*[!0-9]*|'')	# if not a number
