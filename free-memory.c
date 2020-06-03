@@ -1,5 +1,5 @@
-// Createad 200601
-// rewrote sh version to C to use less CPU when used in tint2 taskbar
+// 181227 created sh version
+// 200601 rewritten in C to use less CPU when used in tint2 taskbar
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>		// exit()
