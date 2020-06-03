@@ -1,0 +1,18 @@
+#!/bin/sh
+# Created 200530
+# Maximize current window over multiple monitors (and skip maximizing over taskbar)
+
+# wmctrl -ir $(xdotool getactivewindow) -e 0,X1,Y1,X2,X2		- set window at position X1,Y1 and set size
+# xdpyinfo | awk '/dimensions:/ { print $2; exit }' | cut -d 'x' -f 1		get maximum X resolution, eg 3840
+# xdpyinfo | awk '/dimensions:/ { print $2; exit }' | cut -d 'x' -f 2		get maximum Y resolution
+
+# must be as separate command, otherwise wmctrl bellow won't maximize currently maximized window over two screen
+wmctrl -ir $(xdotool getactivewindow)\
+	-b remove,maximized_vert,maximized_horz
+
+wmctrl -ir $(xdotool getactivewindow)\
+	-e 0,0,0,$(xdpyinfo | awk '/dimensions:/ { print $2; exit }' | cut -d 'x' -f 1),$(xdpyinfo | awk '/dimensions:/ { print $2; exit }' | cut -d 'x' -f 2)\
+
+# also must be separate command to maximize it vertically
+wmctrl -ir $(xdotool getactivewindow)\
+	-b add,maximized_vert

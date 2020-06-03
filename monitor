@@ -1,0 +1,162 @@
+#!/bin/sh
+# Created 200419
+# quick script for changing internal/external monitor (no hardware event for monitor connect/disconnect on my laptop - SeaBIOS fault?)
+# can be executed with xbindkeys
+
+# xrandr --output LVDS1 --off --output DP3 --auto --right-of DP2 --output DP2 --auto
+
+INTERNAL_MONITOR="LVDS-1"
+EXTERNAL_MONITOR="HDMI-1"
+
+INTERNAL_MONITOR="LVDS1"
+EXTERNAL_MONITOR="DP1"
+EXTERNAL_MONITOR="HDMI1"
+# 200529 dual external monitors on dock:
+EXTERNAL_MONITORs="DP2"
+EXTERNAL_MONITORm="DP3"
+
+logger $0 called with argument $1
+
+# INFO 200601: Xorg driver	intel -> DP1 DP2 LVDS1
+#							modesetting -> DP-1 DP-2 LVDS-1
+# REGEX_INT_MONITOR="LVDS."
+# REGEX_INT_MONITOR="LVDS."
+# sed -E 's/LVDS?[0-9]\ //g'	# LVDS1
+# sed -E 's/LVDS.[0-9]\ //g'	# LVDS-1
+
+detect_monitors()
+{
+	# - find number of monitors connected
+	# - find internal and external monitors
+
+	N=$(xrandr | grep -w connected | wc -l)
+	MONITORS=$(xrandr | grep -w connected | cut -d ' ' -f 1)
+
+	EXT_MONITORS=$(echo $MONITORS | sed -E 's/LVDS.[0-9]//g')
+	INT_MONITORS=$(echo $MONITORS | grep -ow 'LVDS.[0-9]')
+
+	N_EXT=$(echo $EXT_MONITORS | wc -w)
+
+	if [ "$N" -gt 1 ]; then
+		echo Detected $N monitors
+
+		N_EXT=$(echo $EXT_MONITORS | wc -w)
+
+		if [ $N_EXT -eq 1 ]; then
+			echo Detected 1 external monitor
+		elif [ $N_EXT -eq 2 ]; then
+			echo Detected 2 external monitors
+			MON1=$(echo $EXT_MONITORS | cut -d ' ' -f 1)
+			MON2=$(echo $EXT_MONITORS | cut -d ' ' -f 2)
+		else
+			echo Detected more than 2 external monitors TODO
+		fi
+	fi
+
+	echo "Detected monitors: $N external: $N_EXT"
+	echo "Detected monitors $MONITORS"
+	echo "Detected internal monitors $INT_MONITORS"
+	echo "Detected external monitors $EXT_MONITORS"
+
+	EXT_IN_USE=$(xrandr --listmonitors | grep '^ [0-9]' | awk 'NF>1{print $NF}')
+}
+
+detect_monitors
+
+case $1 in
+	i)
+		# Use only internal monitor
+
+		if [ $N_EXT -gt 0 ]; then
+			for i in $EXT_MONITORS; do
+				xrandr --output $i --off
+			done
+		fi
+		xrandr --output $INT_MONITORS --auto
+
+		killall tint2
+		rm /tmp/tint2*log
+		tint2 > /tmp/tint2-single.log 2>&1 &
+	;;
+	e)
+		# echo external only
+		xrandr
+		# xrandr --output $INTERNAL_MONITOR --off --output $EXTERNAL_MONITOR --auto --same-as $INTERNAL_MONITOR
+		xrandr --output $EXTERNAL_MONITORm --auto --primary --right-of $EXTERNAL_MONITORs --output $EXTERNAL_MONITORs --auto --output $INTERNAL_MONITOR --off
+		# killall tint2
+		# tint2 -c ~/.config/tint2/tint2-master.rc > /tmp/tint2-master.log&
+		# tint2 -c ~/.config/tint2/tint2-slave.rc  > /tmp/tint2-slave.log&
+	;;
+	s)
+		# Display same pictures on all connected monitors
+		xrandr --output $INT_MONITORS --auto
+		for i in $MONITORS ; do
+			xrandr --output $i --same-as $INT_MONITORS --auto
+		done
+	# 	# echo same
+	# 	xrandr --output $INTERNAL_MONITOR --auto --output $EXTERNAL_MONITOR --auto --same-as $INTERNAL_MONITOR
+	;;
+	a)
+		echo Auto detecting monitors
+		# 1 internal monitor - use that
+		# 1 internal and 1 external - use only external
+		# 1 internal and 2 external - use only external monitors
+
+
+		if [ "$N" -eq 1 ]; then
+			# 1 monitor detected
+			xrandr --output $MONITORS --auto
+
+		elif [ "$N" -gt 1 ]; then
+			# more than 1 monitor detected
+
+			# turn off internal monitor
+			if [ ! -z "$INT_MONITORS" ]; then
+				xrandr --output $INT_MONITORS --off
+			fi
+
+			if [ $N_EXT -eq 1 ]; then
+				# 1 external monitor
+				xrandr --output $EXT_MONITORS --auto
+			elif [ $N_EXT -eq 2 ]; then
+				# 2 external monitors
+				# xrandr --output $MON1 --auto --right-of $MON2 --output $MON2 --auto
+				xrandr --output $MON2 --auto --right-of $MON1 --primary --output $MON1 --auto
+
+				killall tint2
+				rm /tmp/tint2*log
+				tint2 -c ~/.config/tint2/tint2-master.rc > /tmp/tint2-master.log 2>&1 &
+				tint2 -c ~/.config/tint2/tint2-slave.rc  > /tmp/tint2-slave.log  2>&1 &
+			else
+				echo Detected more than 2 external monitors $N_EXT $MON1 $MON2 TODO
+			fi
+		fi
+	;;
+	e1)
+		echo Forcing only one external monitor
+		# 2 external monitors connected - force to use only one of them (toggle the non-active one)
+
+		if [ $N_EXT -eq 1 ]; then
+			# 1 external monitor
+			xrandr --output $EXT_MONITORS --auto
+		elif [ $N_EXT -eq 2 ]; then
+			# 2 external monitors
+
+			# toggle to use other external monitor
+			if [ $EXT_IN_USE == $MON1 ] ; then
+				xrandr --output $MON2 --auto --output $MON1 --off
+			else
+				xrandr --output $MON1 --auto --output $MON2 --off
+			fi
+
+			killall tint2
+			rm /tmp/tint2*log
+			tint2 > /tmp/tint2-single.log 2>&1 &
+		else
+			echo Detected more than 2 external monitors TODO
+		fi
+	;;
+	*)
+		echo error, \$1 = $1
+	;;
+esac
