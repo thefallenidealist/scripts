@@ -4,8 +4,8 @@
 
 #define NO_MAIN	// don't use main() from included .c
 
-#include "./cpu_temperature.c"
-#include "./load_average.c"
+#include "./cpu-temperature.c"
+#include "./load-average.c"
 
 int main()
 {

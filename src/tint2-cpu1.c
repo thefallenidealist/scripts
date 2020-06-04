@@ -5,8 +5,8 @@
 
 #define NO_MAIN	// don't use main() from included .c
 
-#include "./cpu_usage.c"
-#include "./cpu_freq.c"
+#include "./cpu-usage.c"
+#include "./cpu-freq.c"
 
 int main()
 {
